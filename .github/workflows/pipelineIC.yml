@@ -30,6 +30,14 @@ jobs:
         run: npm run lint
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        with:
+         projectBaseDir: .
+         args: >
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+          -Dsonar.sources=.
+          -Dsonar.exclusions=node_modules/**,.next/**,out/**,**/*.test.js,**/*.spec.js
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.LABORATORIO_FINAL_DEVSECOPS }}
