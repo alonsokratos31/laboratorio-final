@@ -9,19 +9,32 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-latest
-    steps: 
-      - name: Download OWASP Dependency Check
-        run: |
-          VERSION=$(curl -s https://jeremylong.github.io/DependencyCheck/current.txt)
-          curl -sL "https://github.com/jeremylong/DependencyCheck/releases/download/v$VERSION/dependency-check-$VERSION-release.zip" --output dependency-check.zip
-          unzip dependency-check.zip
-      - name: Run Dependency Check
-        run: |
-          ./dependency-check/bin/dependency-check.sh --out report.html --scan .
-          rm -rf dependency-check*
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: artifacts
-          path: report.html
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "nextjs-final-project"
+          path: "."
+          format: "ALL"
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 7
+            --suppression suppression.xml
+        continue-on-error: true
+      - name: Upload Dependency-Check Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report
