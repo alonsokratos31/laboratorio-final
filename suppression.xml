@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+
+  <!-- Suprimir una vulnerabilidad específica (por CVE ID) en una dependencia concreta -->
+  <suppress>
+    <cvssBelow>7.0</cvssBelow> <!-- Opcional: suprimir solo si el CVSS es menor -->
+    <cve>CVE-2023-12345</cve>
+    <packageUrl>pkg:npm/lodash@4.17.19</packageUrl>
+  </suppress>
+</suppressions>
