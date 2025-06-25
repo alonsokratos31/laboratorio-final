@@ -1,4 +1,4 @@
-name: Workflow for IC - Next.js Final Project
+name: SAST - Static Analysis
 
 on:
   push:
