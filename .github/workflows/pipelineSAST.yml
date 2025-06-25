@@ -39,28 +39,36 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Esperar y validar Quality Gate de SonarCloud
+
+      - name: Validando resultados de SonarCloud
         run: |
-          echo "Esperando resultados del análisis en SonarCloud..."
+          echo "⌛ Esperando resultados del análisis de SonarCloud..."
 
-          # Esperar a que el análisis se procese (máximo 60s)
+          # Obtener ID del análisis
+          idanalisis=$(curl -s -X GET -u "${{ secrets.SONAR_TOKEN }}:" \
+            "https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}")
+          idanalisisParse=$(echo "$idanalisis" | jq -r .current.analysisId)
+          echo "🔍 ID del análisis: $idanalisisParse"
+
+          # Esperar hasta 60 segundos a que se genere el resultado del Quality Gate
           for i in {1..12}; do
-            response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ github.repository }}")
-            status=$(echo "$response" | jq -r '.projectStatus.status')
+            qualityGate=$(curl -s -X GET -u "${{ secrets.SONAR_TOKEN }}:" \
+              "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse")
+            qualitygateStatus=$(echo "$qualityGate" | jq -r .projectStatus.status)
 
-            if [[ "$status" == "OK" || "$status" == "WARN" || "$status" == "ERROR" ]]; then
-              echo "Estado del Quality Gate: $status"
+            if [[ "$qualitygateStatus" == "OK" || "$qualitygateStatus" == "WARN" || "$qualitygateStatus" == "ERROR" ]]; then
+              echo "📊 Estado del Quality Gate: $qualitygateStatus"
               break
             fi
 
-            echo "Aún no disponible (status: $status), esperando 5s..."
+            echo "⏳ Aún no disponible (estado: $qualitygateStatus), reintentando en 5s..."
             sleep 5
           done
 
-          # Validar estado final
-          case "$status" in
+          # Validar resultado
+          case "$qualitygateStatus" in
             "OK")
-              echo "✔️ Calidad del código: OK"
+              echo "✅ Calidad del código: OK"
               ;;
             "WARN")
               echo "⚠️ Calidad del código: WARN"
@@ -71,7 +79,7 @@ jobs:
               exit 1
               ;;
             *)
-              echo "❓ Estado desconocido del Quality Gate: $status"
+              echo "❓ Estado desconocido de la calidad del código: $qualitygateStatus"
               exit 1
               ;;
           esac
