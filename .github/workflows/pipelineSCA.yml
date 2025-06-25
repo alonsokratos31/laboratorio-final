@@ -1,13 +1,14 @@
-name: Dependency-Check
+name: SCA - Dependency-Check
 on:
-  push:
+  workflow_run:
+    workflows: ["pipelineSAST.yml"]
+    types:
+      - completed
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
 jobs:
   dependency-check:
-    name: Dependency-Check
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
