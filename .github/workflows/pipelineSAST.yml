@@ -46,7 +46,7 @@ jobs:
 
           # Obtener ID del análisis
           idanalisis=$(curl -s -X GET -u "${{ secrets.SONAR_TOKEN }}:" \
-            "https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}")
+            "https://sonarcloud.io/api/ce/component?component=${{ secrets.SONAR_PROJECT_KEY }}")
           idanalisisParse=$(echo "$idanalisis" | jq -r .current.analysisId)
           echo "🔍 ID del análisis: $idanalisisParse"
 
