@@ -39,29 +39,39 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Validando resultados de SonarCloud
+      - name: Esperar y validar Quality Gate de SonarCloud
         run: |
-          idanalisis=$(curl -s -X GET -u '${{ secrets.SONAR_TOKEN }}: ' 'https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}')
-          idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
-          echo "ID del análisis: $idanalisisParse"
-          qualityGate=$(curl -s -X GET -u '${{ secrets.SONAR_TOKEN }}: ' "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse")
-          qualitygateStatus=$(echo "$qualityGate" | jq .projectStatus.status | sed -e 's/^"//' -e 's/"$//')
-          case "$qualitygateStatus" in
+          echo "Esperando resultados del análisis en SonarCloud..."
+
+          # Esperar a que el análisis se procese (máximo 60s)
+          for i in {1..12}; do
+            response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ github.repository }}")
+            status=$(echo "$response" | jq -r '.projectStatus.status')
+
+            if [[ "$status" == "OK" || "$status" == "WARN" || "$status" == "ERROR" ]]; then
+              echo "Estado del Quality Gate: $status"
+              break
+            fi
+
+            echo "Aún no disponible (status: $status), esperando 5s..."
+            sleep 5
+          done
+
+          # Validar estado final
+          case "$status" in
             "OK")
-              echo "Calidad del código: OK"
+              echo "✔️ Calidad del código: OK"
               ;;
             "WARN")
-              echo "Calidad del código: WARN"
+              echo "⚠️ Calidad del código: WARN"
               exit 1
               ;;
             "ERROR")
-              echo "Calidad del código: ERROR"
+              echo "❌ Calidad del código: ERROR"
               exit 1
               ;;
             *)
-              echo "Estado desconocido de la calidad del código: $qualitygateStatus"
+              echo "❓ Estado desconocido del Quality Gate: $status"
               exit 1
               ;;
           esac
-
