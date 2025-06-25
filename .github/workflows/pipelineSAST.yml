@@ -52,7 +52,7 @@ jobs:
 
           # Esperar hasta 60 segundos a que se genere el resultado del Quality Gate
           for i in {1..12}; do
-            qualityGate=$(curl -s -X GET -u "${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
+            qualityGate=$(curl -s -X GET -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
             qualitygateStatus=$(echo "$qualityGate" | jq .projectStatus.status | sed -e 's /^"//' -e 's/"$//')
             if [[ "$qualitygateStatus" == "OK" || "$qualitygateStatus" == "WARN" || "$qualitygateStatus" == "ERROR" ]]; then
               echo "📊 Estado del Quality Gate: $qualitygateStatus"
