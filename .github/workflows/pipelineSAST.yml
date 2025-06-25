@@ -39,3 +39,29 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Validando resultados de SonarCloud
+        run: |
+          idanalisis=$(curl -s -X GET -u '${{ secrets.SONAR_TOKEN }}: ' 'https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}')
+          idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
+          echo "ID del análisis: $idanalisisParse"
+          qualityGate=$(curl -s -X GET -u '${{ secrets.SONAR_TOKEN }}: ' "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse")
+          qualitygateStatus=$(echo "$qualityGate" | jq .projectStatus.status | sed -e 's/^"//' -e 's/"$//')
+          case "$qualitygateStatus" in
+            "OK")
+              echo "Calidad del código: OK"
+              ;;
+            "WARN")
+              echo "Calidad del código: WARN"
+              exit 1
+              ;;
+            "ERROR")
+              echo "Calidad del código: ERROR"
+              exit 1
+              ;;
+            *)
+              echo "Estado desconocido de la calidad del código: $qualitygateStatus"
+              exit 1
+              ;;
+          esac
+
