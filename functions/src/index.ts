@@ -34,3 +34,16 @@ export const deletePostComments = functions.firestore
         console.log("Error deleting post comments");
       });
   });
+export const deleteUserDocument = functions.auth
+  .user()
+  .onDelete(async (user) => {
+    db.collection("users")
+      .doc(user.uid)
+      .delete()
+      .then(() => {
+        console.log("User document deleted successfully");
+      })
+      .catch((error) => {
+        console.error("Error deleting user document:", error);
+      });
+  });
