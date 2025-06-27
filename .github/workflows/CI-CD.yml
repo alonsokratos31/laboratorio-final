@@ -159,7 +159,7 @@ jobs:
         run: docker pull kratos32/labfinaldevsecops:latest
 
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@v0.4.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: kratos32/labfinaldevsecops:latest
           format: 'table'
