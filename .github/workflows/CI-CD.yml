@@ -171,6 +171,9 @@ jobs:
     name: DAST - Dynamic Analysis
     needs: DockerScanTrivy
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Despliegue de la imagen Docker
         run: |
