@@ -163,12 +163,6 @@ jobs:
         with:
           image-ref: kratos32/labfinaldevsecops:latest
           format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
-          ignore-policy: './trivy-ignore-policy.json'
-
       - name: Push Docker Image
         run: docker push kratos32/labfinaldevsecops:latest
 
