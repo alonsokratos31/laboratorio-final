@@ -142,4 +142,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: kratos32/labFinalDevSecOps:latest
+          tags: kratos32/labfinaldevsecops:latest
