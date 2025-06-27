@@ -162,31 +162,25 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: kratos32/labfinaldevsecops:latest
-          format: 'table'
+          format: "table"
       - name: Push Docker Image
         run: docker push kratos32/labfinaldevsecops:latest
 
-#--------------------DAST------------------------#
+  #--------------------DAST------------------------#
   DAST:
     name: DAST - Dynamic Analysis
     needs: DockerScanTrivy
     runs-on: self-hosted
     steps:
-        - name: Despliegue de la imagen Docker
-          run: |
-            docker pull kratos32/labfinaldevsecops:latest
-            docker run -d -p 3000:3000 --name labfinaldevsecops kratos32/labfinaldevsecops:latest
-        - name: Esperar a que la aplicación esté lista
-          run: |
-            for i in {30..0}; do
-              if docker exec labfinaldevsecops curl -s -f http://localhost:3000/; then
-                break
-              fi
-              echo "⏳ Esperando a que la aplicación esté lista..."
-              sleep 5
-            done
-        - name: Ejecutar OWASP ZAP Scan
-          uses: zaproxy/action-baseline@v0.11.0
-          with:
-            target: 'http://localhost:3000'
-    
+      - name: Despliegue de la imagen Docker
+        run: |
+          docker pull kratos32/labfinaldevsecops:latest
+          docker run -d -p 3000:3000 --name labfinaldevsecops kratos32/labfinaldevsecops:latest
+      - name: Esperar a que la aplicación esté lista
+        run: |
+          sleep 30 # Espera 30 segundos para que la aplicación se inicie completamente
+
+      - name: Ejecutar OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: "http://localhost:3000"
