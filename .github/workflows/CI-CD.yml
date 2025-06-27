@@ -143,3 +143,56 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: kratos32/labfinaldevsecops:latest
+
+  DockerScanTrivy:
+    name: Docker - Scan Image
+    runs-on: ubuntu-latest
+    needs: DockerBuild
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker Pull
+        run: docker pull kratos32/labfinaldevsecops:latest
+
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@v0.4.0
+        with:
+          image-ref: kratos32/labfinaldevsecops:latest
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          ignore-policy: './trivy-ignore-policy.json'
+
+      - name: Push Docker Image
+        run: docker push kratos32/labfinaldevsecops:latest
+
+#--------------------DAST------------------------#
+  DAST:
+    name: DAST - Dynamic Analysis
+    needs: DockerScanTrivy
+    runs-on: self-hosted
+    steps:
+        - name: Despliegue de la imagen Docker
+          run: |
+            docker pull kratos32/labfinaldevsecops:latest
+            docker run -d -p 3000:3000 --name labfinaldevsecops kratos32/labfinaldevsecops:latest
+        - name: Esperar a que la aplicación esté lista
+          run: |
+            for i in {30..0}; do
+              if docker exec labfinaldevsecops curl -s -f http://localhost:3000/; then
+                break
+              fi
+              echo "⏳ Esperando a que la aplicación esté lista..."
+              sleep 5
+            done
+        - name: Ejecutar OWASP ZAP Scan
+          uses: zaproxy/action-baseline@v0.11.0
+          with:
+            target: 'http://localhost:3000'
+    
