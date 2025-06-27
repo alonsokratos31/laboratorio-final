@@ -1,10 +1,11 @@
-name: Docker Build
+name: Docker Build-Push Workflow
 
 on:
-  workflow_run:
-    workflows: ["SCA - Dependency-Check"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   DockerBuild:
