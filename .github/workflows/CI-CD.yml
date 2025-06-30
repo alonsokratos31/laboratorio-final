@@ -185,6 +185,11 @@ jobs:
           ping -n 31 127.0.0.1 > nul
 
       - name: Ejecutar OWASP ZAP Scan
-        uses: zaproxy/action-baseline@v0.11.0
-        with:
-          target: "http://localhost:3000/"
+        shell: cmd
+        run: |
+          docker run --rm --network="host" ^
+          -v "%cd%":/zap/wrk/:rw ^
+          -t owasp/zap2docker-stable zap-baseline.py ^
+          -t http://localhost:3000/ ^
+          -J zap-report.json ^
+          -r zap-report.html
