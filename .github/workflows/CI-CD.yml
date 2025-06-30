@@ -181,8 +181,9 @@ jobs:
           docker run -d -p 3000:3000 --name labfinaldevsecops kratos32/labfinaldevsecops:latest
       - name: Esperar a que la aplicación esté lista
         run: |
-          timeout /t 30 /nobreak # Espera 30 segundos para que la aplicación se inicie completamente
-
+          echo Esperando 30 segundos para que la app se inicie completamente...
+          timeout /t 30 /nobreak
+        shell: cmd
       - name: Ejecutar OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
