@@ -177,13 +177,13 @@ jobs:
     steps:
       - name: Despliegue de la imagen Docker
         run: |
-          docker pull kratos32/labfinaldevsecops:latest
           docker run -d -p 3000:3000 --name labfinaldevsecops kratos32/labfinaldevsecops:latest
       - name: Esperar a que la aplicación esté lista
-        run: |
-          echo Esperando 30 segundos para que la app se inicie completamente...
-          timeout /t 30 /nobreak
         shell: cmd
+        run: |
+          echo Esperando 30 segundos para que la app en el puerto 3000 se inicie...
+          ping -n 31 127.0.0.1 > nul
+
       - name: Ejecutar OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
