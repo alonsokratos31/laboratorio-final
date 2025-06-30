@@ -173,7 +173,7 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        shell: pwsh
+        shell: cmd # Cambiado a PowerShell para el trabajo de análisis dinámico DAST
     steps:
       - name: Despliegue de la imagen Docker
         run: |
@@ -186,4 +186,4 @@ jobs:
       - name: Ejecutar OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
-          target: 'http://localhost:3000/'
+          target: "http://localhost:3000/"
